@@ -1,9 +1,27 @@
 use std::{collections::HashSet, fs::{self, File}, io::{BufRead, BufReader, Write}, path::PathBuf};
 
+use tabled::settings::Style;
+
 use crate::cli::AddArgs;
 
 pub struct Paseo {
     pub pathfile: PathBuf
+}
+
+#[derive(tabled::Tabled)]
+struct PathEntry {
+    #[tabled(rename = "#")]
+    index: u16,
+    #[tabled(rename = "Path")]
+    path: String,
+    #[tabled(rename = "Is System Path?")]
+    is_system_path: bool
+}
+
+impl PathEntry {
+    pub fn new(index: u16, path: String, is_system_path: bool) -> Self {
+        PathEntry { index, path, is_system_path }
+    }
 }
 
 impl Paseo {
@@ -57,9 +75,15 @@ impl Paseo {
     }
 
     pub fn list(&self) {
-        let lines = self.get_paths_list();
+        let paths = self.get_paths_list();
 
-        println!("{:?}", lines);
+        let mut index = 0;
+        let path_entries = paths.into_iter().map(|path| { index += 1; PathEntry::new(index, path, false) }).collect::<Vec<PathEntry>>();
+
+        let mut table = tabled::Table::new(path_entries);
+        table.with(Style::rounded());
+
+        println!("{}", table);
     }
 
     pub fn add(&self, add_args: AddArgs) {
