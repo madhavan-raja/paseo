@@ -1,5 +1,7 @@
 use std::{collections::HashSet, fs::File, io::{BufRead, BufReader, Write}, path::PathBuf};
 
+use crate::{cli::Shell, core::exporter::Exporter};
+
 pub struct Paseo {
     pub pathfile: PathBuf
 }
@@ -52,5 +54,15 @@ impl Paseo {
         paths.insert(path);
 
         self.write_paths(paths);
+    }
+
+    pub(crate) fn get_exported_path(&self, shell: Shell) -> String {
+        let exporter = Exporter::new(self.get_paths_list());
+
+        match shell {
+            Shell::Bash => exporter.export_bash(),
+            Shell::Zsh => String::new(),
+            Shell::Fish => String::new()
+        }
     }
 }

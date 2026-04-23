@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::cli::AddArgs;
+use crate::cli::{AddArgs, ExportArgs};
 use crate::core::paseo::Paseo;
 use crate::core::path_entry::PathEntry;
 
@@ -21,7 +21,11 @@ impl Paseo {
 
     pub fn add(&self, add_args: AddArgs) {
         let directory = fs::canonicalize(add_args.directory).unwrap().as_path().to_str().unwrap().to_string();
-
         self.add_path(directory);
+    }
+
+    pub fn export(&self, export_args: ExportArgs) {
+        let path_value = self.get_exported_path(export_args.shell);
+        println!("{}", path_value);
     }
 }

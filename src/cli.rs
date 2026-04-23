@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand, Args};
+use clap::{Parser, Subcommand, Args, ValueEnum};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -17,11 +17,27 @@ pub struct Cli {
 pub enum Commands {
     /// List all directories in PATH
     List,
+
     /// Add to PATH
-    Add(AddArgs)
+    Add(AddArgs),
+
+    /// Export to shell
+    Export(ExportArgs),
 }
 
 #[derive(Args)]
 pub struct AddArgs {
     pub directory: String
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum Shell {
+    Bash,
+    Zsh,
+    Fish
+}
+
+#[derive(Debug, Args)]
+pub struct ExportArgs {
+    pub shell: Shell
 }

@@ -15,5 +15,6 @@ fn main() {
     match args.command {
         Commands::Add(add_args) => paseo.add(add_args),
         Commands::List => paseo.list(),
+        Commands::Export(export_args) => paseo.export(export_args),
     }
 }
