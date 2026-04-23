@@ -5,7 +5,7 @@ use cli::Cli;
 use cli::Commands;
 
 mod core;
-use core::Paseo;
+use core::paseo::Paseo;
 
 fn main() {
     let args = Cli::parse();
