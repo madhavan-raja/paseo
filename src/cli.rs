@@ -23,6 +23,9 @@ pub enum Commands {
 
     /// Export to shell
     Export(ExportArgs),
+
+    /// Import from shell
+    Import(ImportArgs),
 }
 
 #[derive(Args)]
@@ -40,4 +43,10 @@ pub enum Shell {
 #[derive(Debug, Args)]
 pub struct ExportArgs {
     pub shell: Shell
+}
+
+#[derive(Debug, Args)]
+pub struct ImportArgs {
+    pub shell: Shell,
+    pub paths: String
 }

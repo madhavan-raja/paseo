@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fs::File, io::{BufRead, BufReader, Write}, path::PathBuf};
 
-use crate::{cli::Shell, core::exporter::Exporter};
+use crate::{cli::Shell, core::{exporter::Exporter, importer::Importer}};
 
 pub struct Paseo {
     pub pathfile: PathBuf
@@ -63,6 +63,16 @@ impl Paseo {
             Shell::Bash => exporter.export_bash(),
             Shell::Zsh => String::new(),
             Shell::Fish => String::new()
+        }
+    }
+
+    pub(crate) fn get_imported_paths(&self, shell: Shell, paths: String) -> HashSet<String> {
+        let importer = Importer::new(paths);
+
+        match shell {
+            Shell::Bash => importer.export_bash(),
+            Shell::Zsh => HashSet::new(),
+            Shell::Fish => HashSet::new()
         }
     }
 }
