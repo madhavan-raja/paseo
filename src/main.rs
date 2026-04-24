@@ -18,14 +18,14 @@ fn main() -> Result<()> {
     let shell_type = cli.shell.unwrap_or_else(detect_shell);
     let shell_impl = shell_type.build();
 
-    let mut store = PathStore::load().context("Failed to load paths from storage file")?;
+    let mut store = PathStore::load(cli.pathfile).context("Failed to load paths from storage file")?;
 
     match cli.command {
-        Commands::Add { path, check } => {
+        Commands::Add { path, ensure_existence } => {
             let expanded_path = get_absolute_path(&path)?;
 
-            if check && !Path::new(&path).exists() {
-                anyhow::bail!("Check mode: The directory '{}' does not exist.", path);
+            if ensure_existence && !Path::new(&path).exists() {
+                anyhow::bail!("The directory '{}' does not exist.", path);
             }
 
             if store.insert(expanded_path.clone()) {

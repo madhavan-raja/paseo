@@ -4,18 +4,12 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 
-/// Manages the persistence and ordering of managed paths.
 pub struct PathStore {
-    /// BTreeSet guarantees that paths are strictly unique and always sorted alphabetically.
     paths: BTreeSet<String>,
-    
-    /// The location on the filesystem where paths are saved.
     file_path: PathBuf,
 }
 
 impl PathStore {
-    /// Determines where the paths file should be stored. 
-    /// Defaults to a `.path-manager-store` file in the user's home directory.
     fn default_file_path() -> Result<PathBuf> {
         let home_dir = std::env::var("HOME")
             .or_else(|_| std::env::var("USERPROFILE")) // Fallback for Windows
@@ -24,10 +18,8 @@ impl PathStore {
         Ok(PathBuf::from(home_dir).join("pathfile"))
     }
 
-    /// Loads the stored paths from disk. If the file doesn't exist, 
-    /// it gracefully returns an empty PathStore ready to be populated.
-    pub fn load() -> Result<Self> {
-        let file_path = Self::default_file_path()?;
+    pub fn load(pathfile_location: Option<PathBuf>) -> Result<Self> {
+        let file_path = pathfile_location.unwrap_or(Self::default_file_path()?);
         let mut paths = BTreeSet::new();
 
         if file_path.exists() {
