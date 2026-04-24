@@ -18,6 +18,10 @@ impl PathStore {
     pub fn load(pathfile_location: PathBuf) -> Result<Self> {
         let mut paths = BTreeSet::new();
 
+        if !pathfile_location.exists() {
+            File::create_new(&pathfile_location).context(format!("Failed to create storage file: {:?}", pathfile_location))?;
+        }
+
         let file = File::open(&pathfile_location).context(format!("Failed to open storage file: {:?}", pathfile_location))?;
         let reader = BufReader::new(file);
 

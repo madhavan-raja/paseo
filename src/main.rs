@@ -33,17 +33,23 @@ fn main() -> Result<()> {
                     store.save()?;
                 }
             } else {
-                println!("Path '{}' is already managed.", expanded_path);
+                println!("Directory '{}' is already in pathfile.", expanded_path);
             }
         }
 
-        Commands::List => {
+        Commands::List { formatted } => {
             let paths = store.get_all();
-            if paths.is_empty() {
-                println!("No paths currently managed.");
+
+            if formatted {
+                let export_string = shell_impl.generate_shell_path(&paths);
+                print!("{}", export_string);
             } else {
-                for path in paths {
-                    println!("{}", path);
+                if paths.is_empty() {
+                    println!("No directory currently in pathfile.");
+                } else {
+                    for path in paths {
+                        println!("{}", path);
+                    }
                 }
             }
         }
@@ -57,7 +63,7 @@ fn main() -> Result<()> {
                     store.save()?;
                 }
             } else {
-                println!("Path '{}' is not managed.", expanded_path);
+                println!("Directory '{}' is not in pathfile.", expanded_path);
             }
         }
 
@@ -72,17 +78,10 @@ fn main() -> Result<()> {
                 }
             }
 
-            println!("Imported {} new paths.", added_count);
+            println!("Imported {} new directories.", added_count);
             if !cli.dry_run && added_count > 0 {
                 store.save()?;
             }
-        }
-
-        Commands::Export => {
-            let paths = store.get_all();
-            let export_string = shell_impl.generate_shell_path(&paths);
-
-            print!("{}", export_string);
         }
 
         Commands::GenerateCompletions {

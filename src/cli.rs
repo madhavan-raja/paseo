@@ -26,30 +26,31 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Add a new directory to your managed paths
+    /// Add a new directory
     Add {
-        /// The directory path to add
+        /// The directory to add
         path: String,
     },
 
-    /// List all managed paths
-    List,
+    /// List all directories
+    List {
+        /// Format the output for a shell
+        #[arg(short, long)]
+        formatted: bool,
+    },
 
-    /// Remove a path from the manager
+    /// Remove a directory
     Remove {
-        /// The directory path to remove.
+        /// The directory to remove
         path: String,
     },
 
-    /// Import paths into the manager
+    /// Import the path directories from a shell
     Import {
         /// A raw PATH string (e.g., "dir1:dir2" for Bash). 
         /// If omitted, the app will attempt to read from STDIN, or fallback to the current $PATH.
         raw_path: Option<String>,
     },
-
-    /// Output the managed paths as a single string formatted for a shell
-    Export,
 
     /// Generate tab-completion scripts for your shell
     GenerateCompletions {
