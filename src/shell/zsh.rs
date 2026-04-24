@@ -1,8 +1,8 @@
 use crate::shell::Shell;
 
-pub struct Bash;
+pub struct Zsh;
 
-impl Shell for Bash {
+impl Shell for Zsh {
     fn parse_shell_path(&self, raw_path: &str) -> Vec<String> {
         raw_path
             .split(':')
@@ -22,9 +22,9 @@ mod tests {
 
     #[test]
     fn test_parse_shell_path() {
-        let bash = Bash;
+        let zsh = Zsh;
         let raw = "/usr/local/bin:/usr/bin:/bin::/opt/homebrew/bin:";
-        let parsed = bash.parse_shell_path(raw);
+        let parsed = zsh.parse_shell_path(raw);
         
         assert_eq!(
             parsed,
@@ -39,14 +39,14 @@ mod tests {
 
     #[test]
     fn test_generate_shell_path() {
-        let bash = Bash;
+        let zsh = Zsh;
         let paths = vec![
             "/usr/local/bin".to_string(),
             "/usr/bin".to_string(),
             "/opt/custom dir/bin".to_string(),
         ];
         
-        let path_string = bash.generate_shell_path(&paths);
+        let path_string = zsh.generate_shell_path(&paths);
         
         assert_eq!(
             path_string, 
