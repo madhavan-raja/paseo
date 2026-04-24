@@ -22,12 +22,14 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Add a new directory to PATH
+    #[command(visible_aliases = ["new", "create"])]
     Add {
         /// The directory to add
         path: String,
     },
 
     /// Show all directories in PATH
+    #[command(visible_aliases = ["list", "ls"])]
     Show {
         /// Format the output for the shell
         #[arg(short, long)]
@@ -35,6 +37,7 @@ pub enum Commands {
     },
 
     /// Remove a directory from PATH
+    #[command(visible_aliases = ["delete", "del", "rm"])]
     Remove {
         /// The directory to remove
         path: String,
