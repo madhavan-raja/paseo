@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use crate::shell::SupportedShell;
+use crate::{detect_shell, shell::SupportedShell, store::PathStore};
 
 /// A CLI tool to elegantly manage your shell's PATH variable.
 #[derive(Parser, Debug)]
@@ -9,16 +9,16 @@ use crate::shell::SupportedShell;
 #[command(propagate_version = true)]
 pub struct Cli {
     /// Override the automatically detected shell
-    #[arg(short, long, global = true)]
-    pub shell: Option<SupportedShell>,
+    #[arg(short, long, global = true, default_value = detect_shell().to_string())]
+    pub shell: SupportedShell,
 
-    /// Preview what would happen without making any changes to the file
+    /// Preview what would happen without making any changes to the pathfile
     #[arg(short, long, global = true)]
     pub dry_run: bool,
 
-    /// Location of the Pathfile. Defaults to "~/pathfile"
-    #[arg(short, long, global = true)]
-    pub pathfile: Option<PathBuf>,
+    /// Location of the pathfile
+    #[arg(short, long, global = true, default_value = PathStore::default_file_path().into_os_string())]
+    pub pathfile: PathBuf,
 
     #[command(subcommand)]
     pub command: Commands,
@@ -30,10 +30,6 @@ pub enum Commands {
     Add {
         /// The directory path to add
         path: String,
-
-        /// Verify that the directory actually exists on the filesystem before adding
-        #[arg(short, long)]
-        ensure_existence: bool,
     },
 
     /// List all managed paths
@@ -41,8 +37,8 @@ pub enum Commands {
 
     /// Remove a path from the manager
     Remove {
-        /// The directory path to remove. If omitted, opens an interactive selector.
-        path: Option<String>,
+        /// The directory path to remove.
+        path: String,
     },
 
     /// Import paths into the manager
@@ -52,8 +48,7 @@ pub enum Commands {
         raw_path: Option<String>,
     },
 
-    /// Output the managed paths as a single string formatted for your shell
-    /// Usage (Bash/Zsh): export PATH="$(paseo export)"
+    /// Output the managed paths as a single string formatted for a shell
     Export,
 
     /// Generate tab-completion scripts for your shell

@@ -1,4 +1,5 @@
 use clap::ValueEnum;
+use strum::Display;
 
 mod bash;
 
@@ -12,13 +13,14 @@ pub trait Shell {
 }
 
 /// An enum representing the explicitly supported shells.
-#[derive(ValueEnum, Clone, Debug, PartialEq)]
+#[derive(ValueEnum, Clone, Debug, PartialEq, Display)]
+#[strum(serialize_all = "lowercase")]
 #[clap(rename_all = "lower")] // Ensures CLI inputs like "Bash" are parsed as "bash"
 pub enum SupportedShell {
     Bash,
     Zsh,
     Fish,
-    Nushell,
+    Nu,
 }
 
 impl SupportedShell {
@@ -28,7 +30,7 @@ impl SupportedShell {
             SupportedShell::Bash => Box::new(bash::Bash),
             SupportedShell::Zsh => unimplemented!("Zsh not yet implemented"),
             SupportedShell::Fish => unimplemented!("Fish not yet implemented"),
-            SupportedShell::Nushell => unimplemented!("Nushell not yet implemented"),
+            SupportedShell::Nu => unimplemented!("Nushell not yet implemented"),
         }
     }
 }
