@@ -1,7 +1,12 @@
 [package]
 name = "paseo"
-version = "0.1.0"
+authors = ["Madhavan Raja"]
+description = """A CLI tool to elegantly manage your shell's PATH variable"""
+version = "0.0.1-alpha"
 edition = "2024"
+license-file = "LICENSE"
+readme = "README.md"
+repository = "https://github.com/madhavan-raja/paseo"
 
 [dependencies]
 anyhow = "1.0.102"

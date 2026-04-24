@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use crate::{detect_shell, shell::SupportedShell, store::PathStore};
 
-/// A CLI tool to elegantly manage your shell's PATH variable.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
