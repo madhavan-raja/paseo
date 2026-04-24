@@ -28,10 +28,8 @@ fn main() -> Result<()> {
             let expanded_path = get_absolute_path(&path)?;
 
             if store.insert(expanded_path.clone()) {
-                println!("Adding: {}", expanded_path);
-                if !cli.dry_run {
-                    store.save()?;
-                }
+                store.save()?;
+                println!("Added: {}", expanded_path);
             } else {
                 println!("Directory '{}' is already in pathfile.", expanded_path);
             }
@@ -58,10 +56,8 @@ fn main() -> Result<()> {
             let expanded_path = get_absolute_path(&path)?;
 
             if store.remove(&expanded_path) {
+                store.save()?;
                 println!("Removed: {}", expanded_path);
-                if !cli.dry_run {
-                    store.save()?;
-                }
             } else {
                 println!("Directory '{}' is not in pathfile.", expanded_path);
             }
@@ -78,9 +74,11 @@ fn main() -> Result<()> {
                 }
             }
 
-            println!("Imported {} new directories.", added_count);
-            if !cli.dry_run && added_count > 0 {
+            if added_count > 0 {
                 store.save()?;
+                println!("Imported {} new directories.", added_count);
+            } else {
+                println!("No new directories found to import.");
             }
         }
 

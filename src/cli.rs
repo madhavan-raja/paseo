@@ -12,10 +12,6 @@ pub struct Cli {
     #[arg(short, long, global = true, default_value = detect_shell().to_string())]
     pub shell: SupportedShell,
 
-    /// Preview what would happen without making any changes to the pathfile
-    #[arg(short, long, global = true)]
-    pub dry_run: bool,
-
     /// Location of the pathfile
     #[arg(short, long, global = true, default_value = PathStore::default_file_path().into_os_string())]
     pub pathfile: PathBuf,
