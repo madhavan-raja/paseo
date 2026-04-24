@@ -50,7 +50,7 @@ mod tests {
         
         assert_eq!(
             path_string, 
-            "/usr/local/bin:/usr/bin:/opt/custom:dir/bin"
+            "/usr/local/bin:/usr/bin:/opt/custom dir/bin"
         );
     }
 }
