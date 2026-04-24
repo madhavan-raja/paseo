@@ -29,7 +29,7 @@ fn main() -> Result<()> {
 
             if store.insert(expanded_path.clone()) {
                 store.save()?;
-                println!("Added: {}", expanded_path);
+                println!("Added '{}'", expanded_path);
             } else {
                 println!("Directory '{}' is already in pathfile.", expanded_path);
             }
@@ -57,13 +57,17 @@ fn main() -> Result<()> {
 
             if store.remove(&expanded_path) {
                 store.save()?;
-                println!("Removed: {}", expanded_path);
+                println!("Removed '{}'", expanded_path);
             } else {
                 println!("Directory '{}' is not in pathfile.", expanded_path);
             }
         }
 
-        Commands::Import { raw_path } => {
+        Commands::Import { raw_path, clear } => {
+            if clear {
+                store.clear();
+            }
+
             let path_string = resolve_import_string(raw_path)?;
             let parsed_paths = shell_impl.parse_shell_path(&path_string);
 
@@ -78,7 +82,7 @@ fn main() -> Result<()> {
                 store.save()?;
                 println!("Imported {} new directories.", added_count);
             } else {
-                println!("No new directories found to import.");
+                println!("No new directories found.");
             }
         }
 

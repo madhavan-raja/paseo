@@ -45,6 +45,9 @@ pub enum Commands {
         /// A raw PATH string (e.g., "dir1:dir2" for Bash). 
         /// If omitted, the app will attempt to read from STDIN, or fallback to the current $PATH.
         raw_path: Option<String>,
+
+        /// Remove all existing directories before importing
+        clear: bool,
     },
 
     /// Generate tab-completion scripts for your shell

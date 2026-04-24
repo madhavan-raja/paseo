@@ -50,6 +50,10 @@ impl PathStore {
         Ok(())
     }
 
+    pub fn clear(&mut self) {
+        self.paths.clear();
+    }
+
     pub fn insert(&mut self, path: String) -> bool {
         self.paths.insert(path)
     }
