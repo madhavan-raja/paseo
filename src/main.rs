@@ -1,21 +1,182 @@
-use clap::Parser;
-
 mod cli;
-use cli::Cli;
-use cli::Commands;
+mod shell;
+mod store;
 
-mod core;
-use core::paseo::Paseo;
+use anyhow::{Context, Result};
+use clap::{CommandFactory, Parser};
+use std::env;
+use std::io::{self, IsTerminal, Read};
+use std::path::{Path, PathBuf};
 
-fn main() {
-    let args = Cli::parse();
+use cli::{Cli, Commands};
+use shell::SupportedShell;
+use store::PathStore;
 
-    let paseo = Paseo::new(args.pathfile);
+fn main() -> Result<()> {
+    let cli = Cli::parse();
 
-    match args.command {
-        Commands::Add(add_args) => paseo.add(add_args),
-        Commands::List => paseo.list(),
-        Commands::Export(export_args) => paseo.export(export_args),
-        Commands::Import(import_args) => paseo.import(import_args),
+    let shell_type = cli.shell.unwrap_or_else(detect_shell);
+    let shell_impl = shell_type.build();
+
+    let mut store = PathStore::load().context("Failed to load paths from storage file")?;
+
+    match cli.command {
+        Commands::Add { path, check } => {
+            let expanded_path = get_absolute_path(&path)?;
+
+            if check && !Path::new(&path).exists() {
+                anyhow::bail!("Check mode: The directory '{}' does not exist.", path);
+            }
+
+            if store.insert(expanded_path.clone()) {
+                println!("Added: {}", expanded_path);
+                if !cli.dry_run {
+                    store.save()?;
+                }
+            } else {
+                println!("Path '{}' is already managed.", expanded_path);
+            }
+        }
+
+        Commands::List => {
+            let paths = store.get_all();
+            if paths.is_empty() {
+                println!("No paths currently managed.");
+            } else {
+                for path in paths {
+                    println!("{}", path);
+                }
+            }
+        }
+
+        Commands::Remove { path } => {
+            if let Some(p) = path {
+                if store.remove(&p) {
+                    println!("Removed: {}", p);
+                    if !cli.dry_run {
+                        store.save()?;
+                    }
+                } else {
+                    println!("Path '{}' was not found in the manager.", p);
+                }
+            } else {
+                unimplemented!("Interactive removal is not yet implemented. Please provide a path.");
+            }
+        }
+
+        Commands::Import { raw_path } => {
+            let path_string = resolve_import_string(raw_path)?;
+            let parsed_paths = shell_impl.parse_shell_path(&path_string);
+            
+            let mut added_count = 0;
+            for p in parsed_paths {
+                if store.insert(p) {
+                    added_count += 1;
+                }
+            }
+
+            println!("Imported {} new paths.", added_count);
+            if !cli.dry_run && added_count > 0 {
+                store.save()?;
+            }
+        }
+
+        Commands::Export => {
+            let paths = store.get_all();
+            let export_string = shell_impl.generate_shell_path(&paths);
+            
+            print!("{}", export_string);
+        }
+
+        Commands::GenerateCompletions { shell: target_shell } => {
+            let mut cmd = Cli::command();
+            let bin_name = cmd.get_name().to_string();
+            
+            let clap_shell = match target_shell {
+                SupportedShell::Bash => clap_complete::Shell::Bash,
+                SupportedShell::Zsh => clap_complete::Shell::Zsh,
+                SupportedShell::Fish => clap_complete::Shell::Fish,
+                SupportedShell::Nushell => clap_complete::Shell::Elvish,
+            };
+
+            clap_complete::generate(clap_shell, &mut cmd, bin_name, &mut io::stdout());
+        }
     }
+
+    Ok(())
+}
+
+/// Expands a given path to its absolute form, handling `~/`, `.`, and `..`
+fn get_absolute_path(path: &str) -> Result<String> {
+    let path_obj = Path::new(path);
+
+    // 1. Handle `~/` manually in case the user quoted the input
+    let expanded_tilde = if path.starts_with("~/") {
+        let home = env::var("HOME").or_else(|_| env::var("USERPROFILE"))
+            .context("Could not determine home directory for ~ expansion")?;
+        PathBuf::from(home).join(path.trim_start_matches("~/"))
+    } else {
+        path_obj.to_path_buf()
+    };
+
+    // 2. If the path exists on disk, `canonicalize` is the safest way to resolve 
+    // symlinks and completely flatten relative indicators (`.` and `..`).
+    if expanded_tilde.exists() {
+        let canonical = expanded_tilde.canonicalize()
+            .context("Failed to canonicalize path")?;
+        
+        let mut path_str = canonical.to_string_lossy().to_string();
+        
+        // Windows canonicalize prepends `\\?\` to absolute paths. 
+        // We strip this out so the path works seamlessly in standard shell environments.
+        if cfg!(windows) && path_str.starts_with(r"\\?\") {
+            path_str = path_str.strip_prefix(r"\\?\").unwrap().to_string();
+        }
+        
+        return Ok(path_str);
+    }
+
+    // 3. If the path does NOT exist (and might be created later), canonicalize will fail.
+    // In this case, we just glue the current working directory to the path if it isn't absolute.
+    let absolute_path = if expanded_tilde.is_absolute() {
+        expanded_tilde
+    } else {
+        env::current_dir()?.join(expanded_tilde)
+    };
+
+    Ok(absolute_path.to_string_lossy().to_string())
+}
+
+/// Automatically detects the user's current shell based on the $SHELL environment variable.
+fn detect_shell() -> SupportedShell {
+    let shell_env = env::var("SHELL").unwrap_or_default().to_lowercase();
+    
+    if shell_env.ends_with("zsh") {
+        SupportedShell::Zsh
+    } else if shell_env.ends_with("fish") {
+        SupportedShell::Fish
+    } else if shell_env.ends_with("nu") {
+        SupportedShell::Nushell
+    } else {
+        SupportedShell::Bash
+    }
+}
+
+/// Resolves the raw string for the Import command.
+/// Priority: CLI Argument > STDIN (Piped) > $PATH Environment Variable
+fn resolve_import_string(cli_arg: Option<String>) -> Result<String> {
+    if let Some(arg) = cli_arg {
+        return Ok(arg);
+    }
+
+    // Check if data is being piped into the application
+    let mut stdin = io::stdin();
+    if !stdin.is_terminal() {
+        let mut buffer = String::new();
+        stdin.read_to_string(&mut buffer).context("Failed to read from STDIN")?;
+        return Ok(buffer.trim().to_string());
+    }
+
+    // Fallback to the current system's PATH variable
+    env::var("PATH").context("Failed to read the PATH environment variable")
 }
