@@ -35,7 +35,7 @@ fn main() -> Result<()> {
             }
         }
 
-        Commands::List { formatted } => {
+        Commands::Show { formatted } => {
             let paths = store.get_all();
 
             if formatted {

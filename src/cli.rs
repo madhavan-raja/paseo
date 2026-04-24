@@ -7,7 +7,7 @@ use crate::{detect_shell, shell::SupportedShell, store::PathStore};
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 pub struct Cli {
-    /// Override the automatically detected shell
+    /// The shell for which the operations must be performed
     #[arg(short, long, global = true, default_value = detect_shell().to_string())]
     pub shell: SupportedShell,
 
@@ -21,26 +21,26 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Add a new directory
+    /// Add a new directory to PATH
     Add {
         /// The directory to add
         path: String,
     },
 
-    /// List all directories
-    List {
-        /// Format the output for a shell
+    /// Show all directories in PATH
+    Show {
+        /// Format the output for the shell
         #[arg(short, long)]
         formatted: bool,
     },
 
-    /// Remove a directory
+    /// Remove a directory from PATH
     Remove {
         /// The directory to remove
         path: String,
     },
 
-    /// Import the path directories from a shell
+    /// Import the directories from the shell's PATH
     Import {
         /// A raw PATH string (e.g., "dir1:dir2" for Bash). 
         /// If omitted, the app will attempt to read from STDIN, or fallback to the current $PATH.
