@@ -47,6 +47,7 @@ pub enum Commands {
         raw_path: Option<String>,
 
         /// Remove all existing directories before importing
+        #[arg(short, long)]
         clear: bool,
     },
 
