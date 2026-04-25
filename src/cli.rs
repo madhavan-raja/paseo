@@ -16,8 +16,8 @@ pub struct Cli {
     pub pathfile_location: PathBuf,
 
     /// Location of the pathfile backup
-    #[arg(short, long = "pathfile-backup", global = true, default_value = PathStore::default_pathfile_backup_path().into_os_string())]
-    pub pathfile_backup_location: PathBuf,
+    #[arg(short, long = "backup", global = true, default_value = PathStore::default_backup_path().into_os_string())]
+    pub backup_location: PathBuf,
 
     #[command(subcommand)]
     pub command: Commands,

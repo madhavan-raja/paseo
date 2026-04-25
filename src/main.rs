@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     let shell_impl = shell_type.build();
 
     let mut store =
-        PathStore::load(cli.pathfile_location, cli.pathfile_backup_location).context("Failed to load paths from storage file")?;
+        PathStore::load(cli.pathfile_location, cli.backup_location).context("Failed to load paths from storage file")?;
 
     match cli.command {
         Commands::Add {
