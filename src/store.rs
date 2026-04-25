@@ -31,13 +31,14 @@ impl PathStore {
             File::create_new(&pathfile_location).context(format!("Failed to create pathfile backup: {:?}", pathfile_backup_location))?;
         }
 
-        let file = File::open(&pathfile_location).context(format!("Failed to open pathfile: {:?}", pathfile_location))?;
-        let paths = Self::read_directories(file)?;
+        let paths = Self::read_directories(&pathfile_location)?;
 
         Ok(Self { paths_unchanged: paths.clone(), paths, pathfile_location, pathfile_backup_location })
     }
 
-    fn read_directories(file: File) -> Result<BTreeSet<String>> {
+    fn read_directories(file_location: &PathBuf) -> Result<BTreeSet<String>> {
+        let file = File::open(file_location).context(format!("Failed to open file: {:?}", file_location))?;
+
         let mut directories = BTreeSet::new();
         let reader = BufReader::new(file);
 
@@ -61,8 +62,7 @@ impl PathStore {
     }
 
     pub fn restore(&self) -> Result<()> {
-        let pathfile_backup = File::open(&self.pathfile_backup_location).context(format!("Failed to open pathfile backup: {:?}", &self.pathfile_backup_location))?;
-        let paths_backup = Self::read_directories(pathfile_backup)?;
+        let paths_backup = Self::read_directories(&self.pathfile_backup_location)?;
 
         Self::write_directories(&self.pathfile_location, &paths_backup)?;
         Self::write_directories(&self.pathfile_backup_location, &self.paths)?;

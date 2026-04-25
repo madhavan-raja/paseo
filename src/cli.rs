@@ -12,12 +12,12 @@ pub struct Cli {
     pub shell: SupportedShell,
 
     /// Location of the pathfile
-    #[arg(short, long, global = true, default_value = PathStore::default_pathfilefile_path().into_os_string())]
-    pub pathfile: PathBuf,
+    #[arg(short, long = "pathfile", global = true, default_value = PathStore::default_pathfilefile_path().into_os_string())]
+    pub pathfile_location: PathBuf,
 
     /// Location of the pathfile backup
-    #[arg(short, long, global = true, default_value = PathStore::default_pathfile_backup_path().into_os_string())]
-    pub pathfile_backup: PathBuf,
+    #[arg(short, long = "pathfile-backup", global = true, default_value = PathStore::default_pathfile_backup_path().into_os_string())]
+    pub pathfile_backup_location: PathBuf,
 
     #[command(subcommand)]
     pub command: Commands,
