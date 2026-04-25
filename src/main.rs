@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     let shell_impl = shell_type.build();
 
     let mut store =
-        PathStore::load(cli.pathfile).context("Failed to load paths from storage file")?;
+        PathStore::load(cli.pathfile, cli.pathfile_backup).context("Failed to load paths from storage file")?;
 
     match cli.command {
         Commands::Add {
@@ -84,6 +84,10 @@ fn main() -> Result<()> {
             } else {
                 println!("No new directories found.");
             }
+        }
+
+        Commands::Restore => {
+            store.restore()?;
         }
 
         Commands::GenerateCompletions {

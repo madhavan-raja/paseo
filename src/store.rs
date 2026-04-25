@@ -5,24 +5,40 @@ use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 
 pub struct PathStore {
+    paths_unchanged: BTreeSet<String>,
     paths: BTreeSet<String>,
     pathfile_location: PathBuf,
+    pathfile_backup_location: PathBuf
 }
 
 impl PathStore {
-    pub fn default_file_path() -> PathBuf {
+    pub fn default_pathfilefile_path() -> PathBuf {
         let home_dir = dirs::home_dir().unwrap_or_default();
         home_dir.join(".pathfile")
     }
 
-    pub fn load(pathfile_location: PathBuf) -> Result<Self> {
-        let mut paths = BTreeSet::new();
+    pub fn default_pathfile_backup_path() -> PathBuf {
+        let home_dir = dirs::home_dir().unwrap_or_default();
+        home_dir.join(".pathfile.backup")
+    }
 
+    pub fn load(pathfile_location: PathBuf, pathfile_backup_location: PathBuf) -> Result<Self> {
         if !pathfile_location.exists() {
-            File::create_new(&pathfile_location).context(format!("Failed to create storage file: {:?}", pathfile_location))?;
+            File::create_new(&pathfile_location).context(format!("Failed to create pathfile: {:?}", pathfile_location))?;
         }
 
-        let file = File::open(&pathfile_location).context(format!("Failed to open storage file: {:?}", pathfile_location))?;
+        if !pathfile_location.exists() {
+            File::create_new(&pathfile_location).context(format!("Failed to create pathfile backup: {:?}", pathfile_backup_location))?;
+        }
+
+        let file = File::open(&pathfile_location).context(format!("Failed to open pathfile: {:?}", pathfile_location))?;
+        let paths = Self::read_directories(file)?;
+
+        Ok(Self { paths_unchanged: paths.clone(), paths, pathfile_location, pathfile_backup_location })
+    }
+
+    fn read_directories(file: File) -> Result<BTreeSet<String>> {
+        let mut directories = BTreeSet::new();
         let reader = BufReader::new(file);
 
         for line in reader.lines() {
@@ -30,18 +46,35 @@ impl PathStore {
             let trimmed_line = line.trim();
             
             if !trimmed_line.is_empty() {
-                paths.insert(trimmed_line.to_string());
+                directories.insert(trimmed_line.to_string());
             }
         }
 
-        Ok(Self { paths, pathfile_location })
+        Ok(directories)
     }
 
     pub fn save(&self) -> Result<()> {
-        let mut file = File::create(&self.pathfile_location)
-            .context(format!("Failed to create or overwrite storage file: {:?}", self.pathfile_location))?;
+        Self::write_directories(&self.pathfile_backup_location, &self.paths_unchanged)?;
+        Self::write_directories(&self.pathfile_location, &self.paths)?;
 
-        for path in &self.paths {
+        Ok(())
+    }
+
+    pub fn restore(&self) -> Result<()> {
+        let pathfile_backup = File::open(&self.pathfile_backup_location).context(format!("Failed to open pathfile backup: {:?}", &self.pathfile_backup_location))?;
+        let paths_backup = Self::read_directories(pathfile_backup)?;
+
+        Self::write_directories(&self.pathfile_location, &paths_backup)?;
+        Self::write_directories(&self.pathfile_backup_location, &self.paths)?;
+
+        Ok(())
+    }
+
+    fn write_directories(file_location: &PathBuf, directories: &BTreeSet<String>) -> Result<()> {
+        let mut file = File::create(file_location)
+            .context(format!("Failed to create or overwrite file: {:?}", file_location))?;
+
+        for path in directories {
             writeln!(file, "{}", path)?;
         }
 

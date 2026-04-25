@@ -12,8 +12,12 @@ pub struct Cli {
     pub shell: SupportedShell,
 
     /// Location of the pathfile
-    #[arg(short, long, global = true, default_value = PathStore::default_file_path().into_os_string())]
+    #[arg(short, long, global = true, default_value = PathStore::default_pathfilefile_path().into_os_string())]
     pub pathfile: PathBuf,
+
+    /// Location of the pathfile backup
+    #[arg(short, long, global = true, default_value = PathStore::default_pathfile_backup_path().into_os_string())]
+    pub pathfile_backup: PathBuf,
 
     #[command(subcommand)]
     pub command: Commands,
@@ -53,6 +57,9 @@ pub enum Commands {
         #[arg(short, long)]
         clear: bool,
     },
+
+    /// Restore the directories from the pathfile backup
+    Restore,
 
     /// Generate tab-completion scripts for your shell
     GenerateCompletions {
