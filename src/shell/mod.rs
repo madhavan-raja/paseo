@@ -3,7 +3,6 @@ use strum::Display;
 
 mod bash;
 mod zsh;
-mod fish;
 
 pub trait Shell {
     fn parse_shell_path(&self, raw_path: &str) -> Vec<String>;
@@ -25,7 +24,7 @@ impl SupportedShell {
         match self {
             SupportedShell::Bash => Box::new(bash::Bash),
             SupportedShell::Zsh => Box::new(zsh::Zsh),
-            SupportedShell::Fish => Box::new(fish::Fish),
+            SupportedShell::Fish => unimplemented!("Fish not yet implemented"),
             SupportedShell::Nu => unimplemented!("Nushell not yet implemented"),
         }
     }
