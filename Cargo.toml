@@ -2,7 +2,7 @@
 name = "paseo"
 authors = ["Madhavan Raja"]
 description = """A CLI tool to elegantly manage your shell's PATH variable"""
-version = "0.0.1-alpha"
+version = "0.0.2-alpha"
 edition = "2024"
 license-file = "LICENSE"
 readme = "README.md"

@@ -8,7 +8,11 @@
 
 A CLI tool to elegantly manage your shell's `PATH` variable.
 
-If you are tired of manually editing `export PATH="..."` strings in your `.bashrc` or `.zshrc`, **Paseo** is for you. It maintains your path entries cleanly in a dedicated `.pathfile` and injects them back into your shell dynamically.
+If you are tired of manually editing `export PATH="..."` strings in your `.bashrc` or `.zshrc`, **Paseo** is for you. It maintains your path entries cleanly in a dedicated `.pathfile` which can then be used by all your shells.
+
+The ideal way to use **Paseo** is to let it act as the single source of truth for your `PATH`. This helps you maintain consistency if you use multiple shells in a machine (**Bash** as the default shell and **Nu** as an interactive shell for example).
+
+**NOTE**: Paseo currently only supports Bash and Zsh. Fish and Nushell is currently under development.
 
 ## 📦 Installation
 
@@ -32,11 +36,11 @@ cargo build --release
 
 ## 🚀 Quick Start & Setup
 
-The ideal way to use Paseo is to let it act as the single source of truth for your `PATH`. 
+**Paseo** stores the managed directories in a **pathfile** (`~/.pathfile` by default, can be modified).
 
 ### Import your existing PATH
 
-First, ingest your current `PATH` into Paseo's state file:
+First, import your current `PATH` into **Paseo**:
 
 ```bash
 paseo import
@@ -44,7 +48,7 @@ paseo import
 
 ### Update your shell configuration
 
-Add the following line to the end of your shell's configuration file (e.g., `~/.bashrc`, or `~/.zshrc`):
+Add the following line to the end of your shell's configuration file (e.g., `.bashrc`, or `.zshrc`):
 
 **Bash / Zsh:**
 
@@ -62,11 +66,11 @@ Now, whenever you add or remove directories using `paseo`, just reload your shel
 
 ## 🛠️ Usage
 
-Paseo provides an intuitive set of commands to manipulate your path entries.
+**Paseo** provides an intuitive set of commands to manipulate your path entries.
 
 ### Show Directories
 
-List all the directories currently managed by Paseo.
+List all the directories currently managed by **Paseo**.
 
 ```bash
 paseo show # aliases: list, ls
@@ -76,7 +80,7 @@ paseo show # aliases: list, ls
 
 ### Add a Directory
 
-Add a new directory to Paseo.
+Add a new directory to **Paseo**.
 
 ```bash
 paseo add /home/user/.local/bin # aliases: new, create
@@ -84,7 +88,7 @@ paseo add /home/user/.local/bin # aliases: new, create
 
 ### Remove a Directory
 
-Remove a specific directory from Paseo.
+Remove a specific directory from **Paseo**.
 
 ```bash
 paseo remove /home/user/old_bin # aliases: delete, del, rm
@@ -92,7 +96,7 @@ paseo remove /home/user/old_bin # aliases: delete, del, rm
 
 ### Import Paths
 
-Import directories into Paseo. By default, it reads your current `$PATH` environment variable. You can also pass a raw path string, or pipe it via STDIN.
+Import directories into **Paseo**. By default, it reads your current `$PATH` environment variable. You can also pass a raw path string, or pipe it via STDIN.
 
 #### Import the shell's current `$PATH`
 
@@ -105,7 +109,7 @@ paseo import
 paseo import "/usr/bin:/usr/local/bin"
 ```
 
-#### Import and overwrite everything currently in Paseo
+#### Import and overwrite all managed directories
 
 ```bash
 paseo import --clear
@@ -113,7 +117,7 @@ paseo import --clear
 
 ### Restore from Backup
 
-Before modifying the pathfile, Paseo automatically stores the existing directories in a backup pathfile (`~/.pathfile.backup` by default). If you make a mistake, easily revert it:
+Before modifying the pathfile, **Paseo** automatically stores the existing directories in a backup pathfile (`~/.pathfile.backup` by default, can be modified). If you make a mistake, easily revert it:
 
 ```
 paseo restore
@@ -131,13 +135,13 @@ paseo generate-completions bash > ~/.local/share/bash-completion/completions/pas
 
 ## ⚙️ Global Options
 
-You can customize Paseo's behavior globally across any command:
+You can customize **Paseo**'s behavior globally across any command:
 
-| Option | Short | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `--shell` | `-s` | *Auto-detected* | The shell format for imports and formatting output (`bash`, `zsh`, `fish`, `nu`). |
-| `--pathfile` | `-p` | `~/.pathfile` | Location for the Paseo state file. |
-| `--backup` | `-b` | `~/.pathfile.backup` | Location for the Paseo backup file. |
+| Option       | Short | Default              | Description                                                                       |
+| :----------- | :---- | :------------------- | :-------------------------------------------------------------------------------- |
+| `--shell`    | `-s`  | *Auto-detected*      | The shell format for imports and formatting output (`bash`, `zsh`, `fish`, `nu`). |
+| `--pathfile` | `-p`  | `~/.pathfile`        | Location for the Paseo state file.                                                |
+| `--backup`   | `-b`  | `~/.pathfile.backup` | Location for the Paseo backup file.                                               |
 
 **Example:**
 
@@ -149,4 +153,6 @@ paseo --shell zsh --pathfile ~/.config/paseo/.pathfile show --formatted
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+Copyright &copy; 2026 Madhavan Raja.
+
+Distributed under the MIT License. See LICENSE for more information.
