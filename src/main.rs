@@ -43,7 +43,7 @@ fn main() -> Result<()> {
                 print!("{}", export_string);
             } else {
                 if paths.is_empty() {
-                    println!("No directory currently in pathfile.");
+                    println!("No directories present in pathfile.");
                 } else {
                     for path in paths {
                         println!("{}", path);
@@ -80,9 +80,9 @@ fn main() -> Result<()> {
 
             if added_count > 0 {
                 store.save()?;
-                println!("Imported {} new directories.", added_count);
+                println!("Imported {}{} directories.", added_count, if clear { " new" } else { "" });
             } else {
-                println!("No new directories found.");
+                println!("No{} directories found.", if clear { " new" } else { "" });
             }
         }
 
