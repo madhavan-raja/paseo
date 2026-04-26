@@ -149,8 +149,6 @@ You can customize **Paseo**'s behavior globally across any command:
 paseo --shell zsh --pathfile ~/.config/paseo/.pathfile show --formatted
 ```
 
----
-
 ## 📄 License
 
 Copyright &copy; 2026 Madhavan Raja.
